@@ -14,9 +14,9 @@ a check command example:
 ```./check_shelly -h=<shelly-ip> -u=shellyuser -p=shellypassword -w=90 -c=95```
 
 ## Parameters:
-  -h (host) is mandatory
-  -u (username) and -p (password) are optional, if the Shelly is protected via username / password
-  -w and -c are optional warning /critical thresholds .. (default is 90 for warning, 95 for critical)
+  - -h (host) is mandatory
+  - -u (username) and -p (password) are optional, if the Shelly is protected via username / password
+  - -w and -c are optional warning /critical thresholds .. (default is 90 for warning, 95 for critical)
 
 ## Output:
 OK: shelly1-1D9ABA - Type: SHSW-1 (Uptime: 0 days, 16 hours, 5 minutes and 50 seconds) is healthy.
