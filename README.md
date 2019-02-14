@@ -1,6 +1,6 @@
 # check_shelly
 A php-based Nagios compliant check for the popular Shelly IoT devices.
-This check should work with any nagios compliant monitoring system such as Icinga, Neamon, check_mk, Zabbix and others ...
+This check should work with any nagios compliant monitoring system such as Icinga, Naemon, check_mk, Zabbix and others ...
 
 Note: Currently only Shelly1 and Shelly2 are supported.
 
