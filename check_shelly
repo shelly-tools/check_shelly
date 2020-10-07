@@ -3,16 +3,14 @@
 
 $check = new ShellyDevice();
 
-class ShellyDevice 
-{
+class ShellyDevice {
+
 	public $Device;
 
-	public function __construct()
-	{
+	public function __construct() {
 		$options = getopt("h:u::p::w::c::", array("host:", "user::", "password::","warning::", "critical::" ));
 		
-		if(!isset($options['host']) && !isset($options['h']))
-		{
+		if(!isset($options['host']) && !isset($options['h'])) {
 			echo "parameter -h || --host is missing \n";
 			exit(0);
 		}
@@ -26,14 +24,13 @@ class ShellyDevice
 		$this->_discoverShelly($host, $user, $password);
 		$this->_renderOutput();
 	}
-	
-	private function _discoverShelly($host, $user = false, $password = false)
-	{
+
+	private function _discoverShelly($host, $user = false, $password = false) {
 		// discover status and settings
 		$shellystatus = "http://" . $host . '/status';
 		$shellysettings  = "http://" . $host . '/settings';
-		
-		
+		$shellyreboot  = "http://" . $host . '/reboot';
+
 		//Initialize a Curl handler
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_USERAGENT, 'curl');
@@ -47,15 +44,32 @@ class ShellyDevice
 		$this->Device['status'] = json_decode(curl_exec ($ch), true);
 
 		// discovery failed, probably a username / password issue..
-		if (!is_array($this->Device['status']))
-		{
+		if (!is_array($this->Device['status']))	{
 			echo 'UNKNOWN: Shelly health status is unknown. The device is probably protected with username and password.';
 			exit(3);
 		}
+
+		if (isset($this->Device['status']['meters']) &&  is_array($this->Device['status']['meters'])) {
+			$this->Device['meters'] = $this->Device['status']['meters'];
+		}
+		else 
+			$this->Device['meters'] = '';
+		
+		if (isset($this->Device['status']['temperature'])) {
+			$this->Device['temperature'] = $this->Device['status']['temperature'];
+		}
+
+		if (isset($this->Device['status']['emeters']) &&  is_array($this->Device['status']['emeters']))	{
+			$this->Device['emeters'] = $this->Device['status']['emeters'];
+		}
+		else 
+			$this->Device['emeters'] = '';
+
 		curl_setopt($ch, CURLOPT_URL, $shellysettings);
 		$this->Device['settings'] = json_decode(curl_exec ($ch), true);
 		$this->Device['uptime'] = secondsToTime($this->Device['status']['uptime']);
-		
+		$this->Device['uptime_ts'] = $this->Device['status']['uptime'];
+
 		$this->Device['check']['exit_code'] = 0;
 		
 		// calculate ram usage
@@ -63,22 +77,28 @@ class ShellyDevice
 		$this->Device['ram']['ram_free'] = $this->Device['status']['ram_free'];
 		$this->Device['ram']['ram_used'] = $this->Device['status']['ram_total'] - $this->Device['status']['ram_free'];
 		$this->Device['ram']['usage'] = round($this->Device['ram']['ram_used'] * 100 / $this->Device['ram']['ram_total'], 2);
-		
+
 		// calculate filesystem usage
 		$this->Device['fs']['fs_size'] = $this->Device['status']['fs_size'];
 		$this->Device['fs']['fs_free'] = $this->Device['status']['fs_free'];
 		$this->Device['fs']['fs_used'] = $this->Device['status']['fs_size'] - $this->Device['status']['fs_free'];
 		$this->Device['fs']['usage'] = round($this->Device['fs']['fs_used'] * 100 / $this->Device['fs']['fs_size'], 2);
-				
+
 		if ($this->Device['ram']['usage'] > $this->Device['check']['warning'] || $this->Device['fs']['usage'] > $this->Device['check']['warning'] )
 			$this->Device['check']['exit_code'] = 1;
 		
 		if ($this->Device['ram']['usage'] > $this->Device['check']['critical'] || $this->Device['fs']['usage'] > $this->Device['check']['critical'] )
 			$this->Device['check']['exit_code'] = 2;
+		
+		// Watchdog for Reboot
+		//if ($this->Device['settings']['device']['type'] == 'SHSW-25' && $this->Device['uptime_ts'] > 86400)
+		//{
+		//	curl_setopt($ch, CURLOPT_URL, $shellyreboot);
+		//	curl_exec ($ch);
+		//}
 	}
 
-	private function _renderOutput()
-	{
+	private function _renderOutput() {
 		if ($this->Device['check']['exit_code'] == 0)
 			echo 'OK: ' . $this->Device['settings']['device']['hostname'] . ' - Type: ' . $this->Device['settings']['device']['type']  . ' (Uptime: ' . $this->Device['uptime']. ') is healthy.';
 
@@ -87,9 +107,32 @@ class ShellyDevice
 	
 		if ($this->Device['check']['exit_code'] == 2)
 			echo 'CRITICAL: ' . $this->Device['settings']['device']['hostname'] . ' - Type: ' . $this->Device['settings']['device']['type']  . ' (Uptime: ' . $this->Device['uptime']. ') reported problems. Please check details...';
-	}
-}
 
+		echo '|';
+		echo ' ram='. $this->Device['ram']['ram_used'] . ';;;0;'. $this->Device['ram']['ram_total'];
+		echo ' ramusage='. $this->Device['ram']['usage'] . '%;' . $this->Device['check']['warning'] . ';' . $this->Device['check']['critical'] . ';0;100';
+
+		echo ' fs='. $this->Device['fs']['fs_used'] . ';;;0;'. $this->Device['fs']['fs_size'];
+		echo ' fsusage='. $this->Device['fs']['usage'] . '%;' . $this->Device['check']['warning'] . ';' . $this->Device['check']['critical'] . ';0;100';
+
+		if (is_array($this->Device['meters'])) {
+			foreach($this->Device['meters'] as $key => $value) {
+				echo ' power' . $key . '=' . $value['power'] . ';;;;';
+			}
+		}
+		if (is_array($this->Device['emeters'])) {
+			foreach($this->Device['emeters'] as $key => $value) {
+				echo ' power' . $key . '=' . $value['power'] . ';;;;';
+				echo ' reactive' . $key . '=' . $value['reactive'] . ';;;;';
+				echo ' voltage' . $key . '=' . $value['voltage'] . ';;;;';
+			}
+		}
+		if (isset($this->Device['temperature']))
+			echo ' temperature=' . $this->Device['temperature'] . ';;;;';
+		echo "\n";
+	}
+
+}
 function secondsToTime($seconds) 
 {
     $dtF = new \DateTime('@0');
