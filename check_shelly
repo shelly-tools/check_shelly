@@ -34,7 +34,7 @@ class ShellyDevice {
 		// If no host is set print an error
 		if(!isset($options['host']) && !isset($options['h'])) {
 			echo "parameter -h || --host is missing \n";
-			exit(0);
+			exit(3);
 		}
 		$host =  isset($options['host']) ? $options['host'] : $options['h'];
 		$user =  isset($options['user']) ? $options['user'] : (isset($options['u']) ? $options['u'] : false);
