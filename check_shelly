@@ -8,8 +8,27 @@ class ShellyDevice {
 	public $Device;
 
 	public function __construct() {
-		$options = getopt("h:u::p::w::c::", array("host:", "user::", "password::","warning::", "critical::" ));
-		
+
+		$options = getopt("h:u::p::w::c::H::", array("host:", "user::", "password::","warning::", "critical::" , "help"));
+
+		if(isset($options['help']) || isset($options['H'])) {
+			echo "check_shelly is a nagios compatible check to monitor the health of shelly hardware.\n\n";
+			echo "You can run it for example with:\n";
+			echo "./check_shelly -h <SHELLY_IP>\n\n";
+			echo "If you have authentication enabled then you have to run:\n";
+			echo "./check_shelly -h <SHELLY_IP> -u <USER> -p <PASSWORD>\n\n";
+			echo "To change the warning or the critical value you can pass in -w or -c to change it\n";
+			echo "./check_shelly -h <SHELLY_IP> -w <WARNING> -c <CRITICAL>\n";
+			echo "\n\nThe critical or warning threshold refers to the cpu usage OR the filesystem usage.";
+			echo "Available flags:\n";
+			echo "\t--host\t\t-h\t(required flag) The hostname or IP-Adress of the shelly\n";
+			echo "\t--user\t\t-u\tThe username for the Shelly, when the shelly needs authentication\n";
+			echo "\t--password\t-p\tThe password for the Shelly, when the shelly needs authentication\n";
+			echo "\t--warning\t-w\tThe warning threshold. If the shelly has more RAM or disk usage then  the check is warning\n";
+			echo "\t--critical\t-c\tThe critical threshold. If the shelly has more RAM or disk usage then  the check is critical\n";
+			echo "\t--help\t\t-h\tprints this message\n";
+			exit(0);
+		}
 		if(!isset($options['host']) && !isset($options['h'])) {
 			echo "parameter -h || --host is missing \n";
 			exit(0);
