@@ -9,8 +9,10 @@ class ShellyDevice {
 
 	public function __construct() {
 
+		// define options for cli call
 		$options = getopt("h:u::p::w::c::H::", array("host:", "user::", "password::","warning::", "critical::" , "help"));
 
+		// If help or the shortcut H is set print the help message
 		if(isset($options['help']) || isset($options['H'])) {
 			echo "check_shelly is a nagios compatible check to monitor the health of shelly hardware.\n\n";
 			echo "You can run it for example with:\n";
@@ -29,6 +31,7 @@ class ShellyDevice {
 			echo "\t--help\t\t-h\tprints this message\n";
 			exit(0);
 		}
+		// If no host is set print an error
 		if(!isset($options['host']) && !isset($options['h'])) {
 			echo "parameter -h || --host is missing \n";
 			exit(0);
@@ -117,7 +120,9 @@ class ShellyDevice {
 		//}
 	}
 
+	// _renderOutput will generate the nagios default output with performance data
 	private function _renderOutput() {
+		// generate the plugin output
 		if ($this->Device['check']['exit_code'] == 0)
 			echo 'OK: ' . $this->Device['settings']['device']['hostname'] . ' - Type: ' . $this->Device['settings']['device']['type']  . ' (Uptime: ' . $this->Device['uptime']. ') is healthy.';
 
@@ -127,6 +132,7 @@ class ShellyDevice {
 		if ($this->Device['check']['exit_code'] == 2)
 			echo 'CRITICAL: ' . $this->Device['settings']['device']['hostname'] . ' - Type: ' . $this->Device['settings']['device']['type']  . ' (Uptime: ' . $this->Device['uptime']. ') reported problems. Please check details...';
 
+		// add default performance data => ramusage and fsusage
 		echo '|';
 		echo ' ram='. $this->Device['ram']['ram_used'] . ';;;0;'. $this->Device['ram']['ram_total'];
 		echo ' ramusage='. $this->Device['ram']['usage'] . '%;' . $this->Device['check']['warning'] . ';' . $this->Device['check']['critical'] . ';0;100';
@@ -134,11 +140,14 @@ class ShellyDevice {
 		echo ' fs='. $this->Device['fs']['fs_used'] . ';;;0;'. $this->Device['fs']['fs_size'];
 		echo ' fsusage='. $this->Device['fs']['usage'] . '%;' . $this->Device['check']['warning'] . ';' . $this->Device['check']['critical'] . ';0;100';
 
+		// if meters is set, then add the meters performance data to the output
 		if (is_array($this->Device['meters'])) {
 			foreach($this->Device['meters'] as $key => $value) {
 				echo ' power' . $key . '=' . $value['power'] . ';;;;';
 			}
 		}
+
+		// if emeters is set, then add the emeters performance data to the output
 		if (is_array($this->Device['emeters'])) {
 			foreach($this->Device['emeters'] as $key => $value) {
 				echo ' power' . $key . '=' . $value['power'] . ';;;;';
@@ -146,12 +155,16 @@ class ShellyDevice {
 				echo ' voltage' . $key . '=' . $value['voltage'] . ';;;;';
 			}
 		}
+
+		// if temperature is set, then add the temperature performance data to the output
 		if (isset($this->Device['temperature']))
 			echo ' temperature=' . $this->Device['temperature'] . ';;;;';
 		echo "\n";
 	}
 
 }
+
+// seconds to time parses an amount of seconds to a formatted output of days, hours, minutes and seconds
 function secondsToTime($seconds) 
 {
     $dtF = new \DateTime('@0');
