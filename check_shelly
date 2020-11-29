@@ -65,13 +65,13 @@ class ShellyDevice {
 
 		curl_setopt($ch, CURLOPT_URL, $shellyinfo);
 		$this->Device['info'] = json_decode(curl_exec ($ch), true);
-		// discovery failed, probably a username / password issue..
-		if (!is_array($this->Device['status']) && $this->Device['info']['auth'] == true)	{
+		// discovery failed, probably a username / password protected?
+		if (!is_array($this->Device['status']) && $this->Device['info']['auth'] == true) {
 			echo 'UNKNOWN: Shelly health is unkown. The device is protected with username and password.'. "\n";
 			exit(3);
 		}
 
-		// discovery failed, probably a username / password issue..
+		// discovery failed but auth not set, probably a timeout?
 		if (!is_array($this->Device['status']))	{
 			echo 'UNKNOWN: Shelly health status is unknown. Got no response from device.'. "\n";
 			exit(3);
