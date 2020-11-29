@@ -125,6 +125,21 @@ class ShellyDevice {
 		if ($this->Device['check']['exit_code'] == 2)
 			echo 'CRITICAL: ' . $this->Device['settings']['device']['hostname'] . ' - Type: ' . $this->Device['settings']['device']['type']  . ' (Uptime: ' . $this->Device['uptime']. ') reported problems. Please check details...';
 
+		if (isset($this->Device['status']['inputs'])) {
+			foreach ($this->Device['status']['inputs'] as $input => $state) {
+				echo "\n Input " .$input . ': ' . ($state == 1 ? "on" : "off");  
+			}
+		}
+		if (isset($this->Device['status']['relays'])) {
+			foreach ($this->Device['status']['relays'] as $relay => $state) {
+				echo "\n Relay " .$relay . ': ' . ($state['ison'] == true ? "on" : "off");  
+			}
+		}
+		if (isset($this->Device['status']['lights'])) {
+			foreach ($this->Device['status']['lights'] as $light => $state) {
+				echo "\n Light " .$light . ': ' . ($state['ison'] == true ? "on" : "off");  
+			}
+		}
 		// add default performance data => ramusage and fsusage
 		echo '|';
 		echo ' ram='. $this->Device['ram']['ram_used'] . ';;;0;'. $this->Device['ram']['ram_total'];
