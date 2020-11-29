@@ -111,13 +111,6 @@ class ShellyDevice {
 		
 		if ($this->Device['ram']['usage'] > $this->Device['check']['critical'] || $this->Device['fs']['usage'] > $this->Device['check']['critical'] )
 			$this->Device['check']['exit_code'] = 2;
-		
-		// Watchdog for Reboot
-		//if ($this->Device['settings']['device']['type'] == 'SHSW-25' && $this->Device['uptime_ts'] > 86400)
-		//{
-		//	curl_setopt($ch, CURLOPT_URL, $shellyreboot);
-		//	curl_exec ($ch);
-		//}
 	}
 
 	// _renderOutput will generate the nagios default output with performance data
