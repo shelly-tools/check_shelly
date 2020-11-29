@@ -51,7 +51,6 @@ class ShellyDevice {
 		// discover status and settings
 		$shellystatus = "http://" . $host . '/status';
 		$shellysettings  = "http://" . $host . '/settings';
-		$shellyreboot  = "http://" . $host . '/reboot';
 
 		//Initialize a Curl handler
 		$ch = curl_init();
