@@ -57,8 +57,6 @@ class ShellyDevice {
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_USERAGENT, 'curl');
 		curl_setopt($ch, CURLOPT_TIMEOUT, 5); //timeout after 5 seconds
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_USERPWD, "$user:$password");
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
