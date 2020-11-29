@@ -51,6 +51,7 @@ class ShellyDevice {
 		// discover status and settings
 		$shellystatus = "http://" . $host . '/status';
 		$shellysettings  = "http://" . $host . '/settings';
+		$shellyinfo  = "http://" . $host . '/shelly';
 
 		//Initialize a Curl handler
 		$ch = curl_init();
@@ -62,9 +63,17 @@ class ShellyDevice {
 		curl_setopt($ch, CURLOPT_URL, $shellystatus);
 		$this->Device['status'] = json_decode(curl_exec ($ch), true);
 
+		curl_setopt($ch, CURLOPT_URL, $shellyinfo);
+		$this->Device['info'] = json_decode(curl_exec ($ch), true);
+		// discovery failed, probably a username / password issue..
+		if (!is_array($this->Device['status']) && $this->Device['info']['auth'] == true)	{
+			echo 'UNKNOWN: Shelly health is unkown. The device is protected with username and password.'. "\n";
+			exit(3);
+		}
+
 		// discovery failed, probably a username / password issue..
 		if (!is_array($this->Device['status']))	{
-			echo 'UNKNOWN: Shelly health status is unknown. The device is probably protected with username and password.';
+			echo 'UNKNOWN: Shelly health status is unknown. Got no response from device.'. "\n";
 			exit(3);
 		}
 
@@ -84,8 +93,10 @@ class ShellyDevice {
 		else 
 			$this->Device['emeters'] = '';
 
+		// Discover Settings
 		curl_setopt($ch, CURLOPT_URL, $shellysettings);
 		$this->Device['settings'] = json_decode(curl_exec ($ch), true);
+		
 		$this->Device['uptime'] = secondsToTime($this->Device['status']['uptime']);
 		$this->Device['uptime_ts'] = $this->Device['status']['uptime'];
 
