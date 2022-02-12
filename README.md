@@ -11,10 +11,10 @@ php with php-curl module
 
 ## Example:
 a check command example:
-```./check_shelly -h=<shelly-ip> -u=shellyuser -p=shellypassword -w=90 -c=95```
+```./check_shelly -H <shelly-ip> -u shellyuser -p shellypassword -w 90 -c 95```
 
 ## Parameters:
-  - -h (host) is mandatory
+  - -H (host) is mandatory
   - -u (username) and -p (password) are optional, if the Shelly is protected via username / password
   - -w and -c are optional warning /critical thresholds .. (default is 90 for warning, 95 for critical)
 
